@@ -1,0 +1,16 @@
+{
+  "name": "mara-express",
+  "version": "1.0.0",
+  "description": "나만의 마라탕 커스텀 주문 & 배달 배송 추적 SPA",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx -y http-server -p 3000"
+  },
+  "keywords": [
+    "malatang",
+    "delivery",
+    "custom-order"
+  ],
+  "author": "Antigravity",
+  "license": "ISC"
+}
