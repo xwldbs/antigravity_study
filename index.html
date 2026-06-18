@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마라 익스프레스 | 나만의 마라탕 커스텀 주문</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts Noto Sans KR -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Phone Device Frame -->
+        <div class="phone-mockup">
+            <!-- Notch/Status Bar Simulation -->
+            <div class="status-bar">
+                <span class="time">13:00</span>
+                <div class="camera-lens"></div>
+                <div class="status-icons">
+                    <svg viewBox="0 0 24 24" class="icon"><path fill="currentColor" d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.07 19.58 10.48 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 15c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/></svg>
+                    <svg viewBox="0 0 24 24" class="icon"><path fill="currentColor" d="M17 5H3a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2m-1 9H4v-2h12v2m0-4H4V8h12v2m0 8H4v-2h12v2Z"/></svg>
+                </div>
+            </div>
+
+            <!-- Screen Viewport -->
+            <div class="screen-viewport">
+
+                <!-- [1단계] 주소 입력 및 마라탕 가게 선택 화면 -->
+                <div id="screen-address" class="screen active">
+                    <div class="screen-header-main">
+                        <h1 class="logo">🌶️ MARA <span>EXPRESS</span></h1>
+                    </div>
+                    <div class="screen-body">
+                        <div class="address-section">
+                            <label for="address-input" class="section-title">배달 주소 입력</label>
+                            <div class="address-input-wrapper">
+                                <span class="input-icon">📍</span>
+                                <input type="text" id="address-input" placeholder="어디로 배달해 드릴까요? (예: 서울시 강남구 테헤란로)" autocomplete="off">
+                                <button id="btn-clear-address" class="btn-clear" style="display: none;">&times;</button>
+                            </div>
+                            <button id="btn-search-stores" class="btn-primary btn-search">가게 찾아보기</button>
+                        </div>
+
+                        <div class="store-section">
+                            <h2 class="section-subtitle">배달 가능 매장</h2>
+                            <div id="store-list-placeholder" class="store-placeholder">
+                                <div class="placeholder-icon">🛵</div>
+                                <p>주소를 입력하시면 배달 가능한 마라탕 맛집을 매칭해 드립니다.</p>
+                            </div>
+                            <div id="store-list" class="store-list" style="display: none;">
+                                <!-- Dynamically loaded stores -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- [2단계] 내 마음대로 재료 담기 (바구니 기능) -->
+                <div id="screen-menu" class="screen">
+                    <div class="screen-header">
+                        <button class="btn-back" onclick="app.goToStep('address')">
+                            <svg viewBox="0 0 24 24" class="icon"><path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                        </button>
+                        <h2 id="menu-store-name" class="header-title">마라탕 가게</h2>
+                    </div>
+                    <div class="screen-body no-padding">
+                        <!-- Store Info Card -->
+                        <div class="store-info-hero">
+                            <div class="store-info-content">
+                                <h3 id="hero-store-name">가게 이름</h3>
+                                <div class="store-meta">
+                                    <span class="rating">⭐ <span id="hero-store-rating">4.9</span></span>
+                                    <span class="divider">|</span>
+                                    <span class="delivery-time">🕒 20~35분</span>
+                                </div>
+                                <div class="store-delivery-info">
+                                    <span>최소주문 15,000원</span>
+                                    <span class="divider">·</span>
+                                    <span>배달팁 2,000원</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Category Tabs -->
+                        <div class="category-tabs">
+                            <button class="tab-button active" data-category="basic">기본 재료</button>
+                            <button class="tab-button" data-category="noodle">면 종류</button>
+                            <button class="tab-button" data-category="skewer">꼬치 종류</button>
+                        </div>
+
+                        <!-- Menu List -->
+                        <div id="menu-list" class="menu-list">
+                            <!-- Dynamic menu items will be injected here -->
+                        </div>
+                    </div>
+                    <!-- Cart Bottom Sticky Panel -->
+                    <div class="cart-bottom-bar">
+                        <div class="cart-summary">
+                            <span class="cart-label">장바구니 담은 금액</span>
+                            <span id="cart-total-price" class="cart-price">0원</span>
+                        </div>
+                        <p id="cart-minimum-warning" class="minimum-warning">최소 주문금액 15,000원 이상 채워주세요.</p>
+                        <button id="btn-go-options" class="btn-primary btn-block" disabled>주문하기</button>
+                    </div>
+                </div>
+
+                <!-- [3단계] 매운맛 단계와 고기 추가 선택 -->
+                <div id="screen-options" class="screen">
+                    <div class="screen-header">
+                        <button class="btn-back" onclick="app.goToStep('menu')">
+                            <svg viewBox="0 0 24 24" class="icon"><path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                        </button>
+                        <h2 class="header-title">맛 & 고기 추가</h2>
+                    </div>
+                    <div class="screen-body">
+                        <!-- Spice Level Selection -->
+                        <div class="option-section">
+                            <h3 class="option-title">매운맛 단계 선택 <span class="required">(필수)</span></h3>
+                            <div class="spice-grid">
+                                <label class="spice-card">
+                                    <input type="radio" name="spice-level" value="0">
+                                    <div class="spice-card-inner">
+                                        <div class="spice-badge spice-0">0단계</div>
+                                        <span class="spice-name">순한맛</span>
+                                        <span class="spice-desc">담백한 사골 국물</span>
+                                    </div>
+                                </label>
+                                <label class="spice-card">
+                                    <input type="radio" name="spice-level" value="1">
+                                    <div class="spice-card-inner">
+                                        <div class="spice-badge spice-1">1단계</div>
+                                        <span class="spice-name">보통맛</span>
+                                        <span class="spice-desc">신라면 수준의 매콤함</span>
+                                    </div>
+                                </label>
+                                <label class="spice-card">
+                                    <input type="radio" name="spice-level" value="2">
+                                    <div class="spice-card-inner">
+                                        <div class="spice-badge spice-2">2단계</div>
+                                        <span class="spice-name">매운맛</span>
+                                        <span class="spice-desc">불닭볶음면 수준의 매운맛</span>
+                                    </div>
+                                </label>
+                                <label class="spice-card">
+                                    <input type="radio" name="spice-level" value="3">
+                                    <div class="spice-card-inner">
+                                        <div class="spice-badge spice-3">3단계</div>
+                                        <span class="spice-name">아주 매운맛</span>
+                                        <span class="spice-desc">마니아를 위한 강렬한 매운맛</span>
+                                    </div>
+                                </label>
+                                <label class="spice-card">
+                                    <input type="radio" name="spice-level" value="4">
+                                    <div class="spice-card-inner">
+                                        <div class="spice-badge spice-4">4단계</div>
+                                        <span class="spice-name">지옥맛</span>
+                                        <span class="spice-desc">혀가 얼얼한 극강의 매운맛</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Meat Addition Selection -->
+                        <div class="option-section">
+                            <h3 class="option-title">고기 추가 선택 <span class="optional">(선택)</span></h3>
+                            <div class="meat-selection">
+                                <div class="meat-card">
+                                    <div class="meat-info">
+                                        <span class="meat-name">🍖 소고기 추가 (100g)</span>
+                                        <span class="meat-price">+3,000원</span>
+                                    </div>
+                                    <div class="counter-control">
+                                        <button class="btn-minus" onclick="app.adjustMeat('beef', -1)">-</button>
+                                        <span id="beef-count" class="counter-val">0</span>
+                                        <button class="btn-plus" onclick="app.adjustMeat('beef', 1)">+</button>
+                                    </div>
+                                </div>
+
+                                <div class="meat-card">
+                                    <div class="meat-info">
+                                        <span class="meat-name">🥩 양고기 추가 (100g)</span>
+                                        <span class="meat-price">+3,000원</span>
+                                    </div>
+                                    <div class="counter-control">
+                                        <button class="btn-minus" onclick="app.adjustMeat('mutton', -1)">-</button>
+                                        <span id="mutton-count" class="counter-val">0</span>
+                                        <button class="btn-plus" onclick="app.adjustMeat('mutton', 1)">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Options Bottom Sticky Bar -->
+                    <div class="options-bottom-bar">
+                        <div class="options-summary">
+                            <span class="total-label">총 주문 금액</span>
+                            <span id="options-total-price" class="total-price">15,000원</span>
+                        </div>
+                        <button id="btn-go-checkout" class="btn-primary btn-block" disabled>결제하기로 이동</button>
+                    </div>
+                </div>
+
+                <!-- [4단계] 결제 확인 및 결제하기 -->
+                <div id="screen-checkout" class="screen">
+                    <div class="screen-header">
+                        <button class="btn-back" onclick="app.goToStep('options')">
+                            <svg viewBox="0 0 24 24" class="icon"><path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                        </button>
+                        <h2 class="header-title">주문 확인 & 결제</h2>
+                    </div>
+                    <div class="screen-body">
+                        <!-- Order Summary Card -->
+                        <div class="checkout-card">
+                            <h3 class="checkout-card-title">주문 정보 내역</h3>
+                            <div class="checkout-store-info">
+                                <span class="checkout-store-label">가게명</span>
+                                <span id="checkout-store-name" class="checkout-store-val">소림마라 명동점</span>
+                            </div>
+                            <div class="checkout-address-info">
+                                <span class="checkout-store-label">배달지</span>
+                                <span id="checkout-address-val" class="checkout-store-val">서울시 강남구 테헤란로</span>
+                            </div>
+                            <hr class="checkout-divider">
+                            <div id="checkout-items-list" class="checkout-items-list">
+                                <!-- Dynamically loaded item list summaries -->
+                            </div>
+                            <hr class="checkout-divider">
+                            <div class="checkout-row">
+                                <span>주문 재료 및 옵션</span>
+                                <span id="checkout-food-price">15,000원</span>
+                            </div>
+                            <div class="checkout-row">
+                                <span>배달팁</span>
+                                <span>2,000원</span>
+                            </div>
+                            <div class="checkout-row total-row">
+                                <span>최종 결제 금액</span>
+                                <span id="checkout-total-price">17,000원</span>
+                            </div>
+                        </div>
+
+                        <!-- Payment Methods -->
+                        <div class="payment-section">
+                            <h3 class="payment-title">결제 수단 선택</h3>
+                            <div class="payment-methods">
+                                <label class="pay-method-card">
+                                    <input type="radio" name="payment-method" value="kakaopay">
+                                    <div class="pay-method-inner kakaopay">
+                                        <span class="pay-logo">카카오페이</span>
+                                    </div>
+                                </label>
+                                <label class="pay-method-card">
+                                    <input type="radio" name="payment-method" value="tosspay">
+                                    <div class="pay-method-inner tosspay">
+                                        <span class="pay-logo">토스페이</span>
+                                    </div>
+                                </label>
+                                <label class="pay-method-card">
+                                    <input type="radio" name="payment-method" value="naverpay">
+                                    <div class="pay-method-inner naverpay">
+                                        <span class="pay-logo">네이버페이</span>
+                                    </div>
+                                </label>
+                                <label class="pay-method-card">
+                                    <input type="radio" name="payment-method" value="card">
+                                    <div class="pay-method-inner creditcard">
+                                        <span class="pay-logo">신용 / 체크카드</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Checkout Bottom Sticky Bar -->
+                    <div class="checkout-bottom-bar">
+                        <button id="btn-pay-now" class="btn-primary btn-block" disabled>결제하기</button>
+                    </div>
+                </div>
+
+                <!-- [5단계] 실시간 배달 상태 보기 -->
+                <div id="screen-tracking" class="screen">
+                    <div class="screen-header">
+                        <h2 class="header-title center">배달 현황</h2>
+                    </div>
+                    <div class="screen-body">
+                        <!-- Success Message -->
+                        <div class="success-message">
+                            <div class="success-icon-wrapper">
+                                <div class="success-icon">✓</div>
+                            </div>
+                            <h3>주문이 정상적으로 접수되었습니다!</h3>
+                            <p class="order-number">주문 번호: <span id="order-number-val">M-123456</span></p>
+                        </div>
+
+                        <!-- Live Delivery Track Map Simulation -->
+                        <div class="map-simulation-card">
+                            <div class="map-bg">
+                                <!-- Abstract visual roads via SVG -->
+                                <svg width="100%" height="100%" viewBox="0 0 300 120" preserveAspectRatio="none" class="road-network">
+                                    <path d="M30 60 C 90 60, 110 30, 150 30 C 190 30, 210 90, 270 90" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="6" stroke-linecap="round"/>
+                                    <path id="delivery-progress-line" d="M30 60 C 90 60, 110 30, 150 30 C 190 30, 210 90, 270 90" fill="none" stroke="var(--primary-color)" stroke-width="6" stroke-linecap="round" stroke-dasharray="350" stroke-dashoffset="350"/>
+                                </svg>
+                                <div id="map-pin-store" class="map-pin store">
+                                    <span class="pin-icon">🏢</span>
+                                    <span class="pin-lbl">가게</span>
+                                </div>
+                                <div id="map-pin-rider" class="map-pin rider moving">
+                                    <span class="pin-icon">🛵</span>
+                                </div>
+                                <div id="map-pin-home" class="map-pin home">
+                                    <span class="pin-icon">🏠</span>
+                                    <span class="pin-lbl">집</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tracking Steps Timeline -->
+                        <div class="tracking-card">
+                            <h4 class="tracking-title">실시간 배송 상태</h4>
+                            
+                            <div class="timeline">
+                                <div id="step-cooking" class="timeline-step active">
+                                    <div class="step-indicator">
+                                        <span class="indicator-dot"></span>
+                                        <div class="indicator-line"></div>
+                                    </div>
+                                    <div class="step-content">
+                                        <h5 class="step-label">가게에서 조리 중</h5>
+                                        <p class="step-desc">주문하신 신선한 마라탕 재료로 조리하고 있습니다.</p>
+                                    </div>
+                                </div>
+                                
+                                <div id="step-delivering" class="timeline-step">
+                                    <div class="step-indicator">
+                                        <span class="indicator-dot"></span>
+                                        <div class="indicator-line"></div>
+                                    </div>
+                                    <div class="step-content">
+                                        <h5 class="step-label">라이더가 배달 중</h5>
+                                        <p class="step-desc">조리가 완료되어 라이더가 집으로 출발했습니다.</p>
+                                    </div>
+                                </div>
+                                
+                                <div id="step-delivered" class="timeline-step">
+                                    <div class="step-indicator">
+                                        <span class="indicator-dot"></span>
+                                    </div>
+                                    <div class="step-content">
+                                        <h5 class="step-label">배달 완료</h5>
+                                        <p class="step-desc">음식이 문 앞에 도착했습니다. 맛있게 드세요!</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="estimated-time-box">
+                                <span class="est-label">남은 시간</span>
+                                <span id="estimated-time-val" class="est-value">약 40분</span>
+                            </div>
+                        </div>
+
+                        <!-- Reset button -->
+                        <button id="btn-reset-order" class="btn-secondary btn-block" style="margin-top: 15px; display: none;">새로 주문하기</button>
+                    </div>
+                </div>
+
+            </div> <!-- Screen Viewport End -->
+
+            <!-- Spinner Overlay (Full Frame overlay) -->
+            <div id="loading-overlay" class="loading-overlay">
+                <div class="loader-box">
+                    <div class="spinner"></div>
+                    <h4>결제 진행 중</h4>
+                    <p>안전한 결제를 위해 잠시 기다려주세요...</p>
+                </div>
+            </div>
+
+            <!-- Home indicator bar simulation for iOS style -->
+            <div class="home-indicator"></div>
+        </div>
+    </div>
+</body>
+</html>
