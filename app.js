@@ -58,9 +58,9 @@ const MENU_ITEMS = {
 
 // Application State
 const state = {
-    currentStep: "address",
-    address: "",
-    selectedStore: null,
+    currentStep: "menu",
+    address: "서울시 강남구 테헤란로 152 (기본 배송지)",
+    selectedStore: STORES[0],
     cart: {}, // { itemId: quantity }
     spiceLevel: null,
     meat: {
@@ -91,6 +91,15 @@ const app = {
     init() {
         this.setupTime();
         this.bindEvents();
+        
+        // Initialize default store info on screen-menu
+        const store = state.selectedStore;
+        doc.text("menu-store-name", store.name);
+        doc.text("hero-store-name", store.name);
+        doc.text("hero-store-rating", store.rating);
+        
+        this.renderMenu("basic");
+        this.updateCartUI();
     },
 
     setupTime() {
@@ -110,36 +119,6 @@ const app = {
     },
 
     bindEvents() {
-        // Address input event (showing/hiding clear button)
-        const addrInput = doc.el("address-input");
-        const clearBtn = doc.el("btn-clear-address");
-        
-        addrInput.addEventListener("input", () => {
-            if (addrInput.value.length > 0) {
-                clearBtn.style.display = "flex";
-            } else {
-                clearBtn.style.display = "none";
-            }
-        });
-
-        clearBtn.addEventListener("click", () => {
-            doc.setVal("address-input", "");
-            clearBtn.style.display = "none";
-            addrInput.focus();
-        });
-
-        // Search Stores button
-        doc.el("btn-search-stores").addEventListener("click", () => {
-            this.searchStores();
-        });
-
-        // Search on Enter key
-        addrInput.addEventListener("keypress", (e) => {
-            if (e.key === "Enter") {
-                this.searchStores();
-            }
-        });
-
         // Category Tab buttons
         document.querySelectorAll(".tab-button").forEach(btn => {
             btn.addEventListener("click", (e) => {
@@ -576,8 +555,8 @@ const app = {
     resetOrder() {
         if (state.deliveryTimer) clearTimeout(state.deliveryTimer);
         
-        state.address = "";
-        state.selectedStore = null;
+        state.address = "서울시 강남구 테헤란로 152 (기본 배송지)";
+        state.selectedStore = STORES[0];
         state.cart = {};
         state.spiceLevel = null;
         state.meat.beef = 0;
@@ -585,12 +564,12 @@ const app = {
         state.paymentMethod = null;
         state.orderNumber = "";
 
-        // Reset address page input
-        doc.setVal("address-input", "");
-        doc.el("btn-clear-address").style.display = "none";
-        doc.hide("store-list");
-        doc.show("store-list-placeholder");
+        // Re-initialize default store info on screen-menu
+        const store = state.selectedStore;
+        doc.text("menu-store-name", store.name);
+        doc.text("hero-store-name", store.name);
+        doc.text("hero-store-rating", store.rating);
 
-        this.goToStep("address");
+        this.goToStep("menu");
     }
 };
